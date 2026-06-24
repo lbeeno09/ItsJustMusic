@@ -1,18 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Player/IJMPlayerController.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-void AIJMPlayerController::SetupInputComponent()
+void AIJMPlayerController::BeginPlay() 
 {
-	Super::SetupInputComponent();
+	Super::BeginPlay();
 
-	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	bShowMouseCursor = false;
+
+	if(ULocalPlayer* LocalPlayer = GetLocalPlayer())
 	{
-		for(UInputMappingContext* CurrentContext : DefaultMappingContexts)
+		if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 		{
-			Subsystem->AddMappingContext(CurrentContext, 0);
+			if(DefaultMappingContext)
+			{
+				Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			}
 		}
 	}
 }

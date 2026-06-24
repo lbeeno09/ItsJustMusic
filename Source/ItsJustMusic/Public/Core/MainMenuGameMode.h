@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "IJMGameMode.generated.h"
+#include "MainMenuGameMode.generated.h"
 
 /**
  * 
  */
-UCLASS()	
-class ITSJUSTMUSIC_API AIJMGameMode : public AGameModeBase
+UCLASS()
+class ITSJUSTMUSIC_API AMainMenuGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	

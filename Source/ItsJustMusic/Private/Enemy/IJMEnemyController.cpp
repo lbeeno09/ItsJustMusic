@@ -5,8 +5,7 @@
 
 AIJMEnemyController::AIJMEnemyController()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
+	bWantsPlayerState = true;
 }
 
 void AIJMEnemyController::OnPossess(APawn* InPawn)

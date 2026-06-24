@@ -6,8 +6,6 @@
 #include "AIController.h"
 #include "IJMEnemyController.generated.h"
 
-class UBehaviorTree;
-
 /**
  * 
  */
@@ -22,7 +20,6 @@ public:
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
-private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|AI", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UBehaviorTree> BehaviorTreeAsset;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|AI")
+	TObjectPtr<class UBehaviorTree> BehaviorTreeAsset;
 };

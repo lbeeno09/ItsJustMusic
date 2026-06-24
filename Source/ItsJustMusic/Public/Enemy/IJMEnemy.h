@@ -14,17 +14,4 @@ class ITSJUSTMUSIC_API AIJMEnemy : public ACharacter
 public:
 	AIJMEnemy();
 
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IJM|Movement")
-	float SprintSpeed = 900.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IJM|Movement")
-	float WalkSpeed = 600.0f;
-
-private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "IJM|Components", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* EnemyCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "IJM|Components", meta = (AllowPrivateAccess = "true"))
-	class USkeletalMeshComponent* EnemyMesh;
 };

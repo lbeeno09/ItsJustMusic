@@ -17,8 +17,8 @@ class ITSJUSTMUSIC_API AIJMPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 protected:
-	virtual void SetupInputComponent() override;
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category = "IJM|Input|Input Mappings")
-	TArray<class UInputMappingContext*> DefaultMappingContexts;
+	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 };

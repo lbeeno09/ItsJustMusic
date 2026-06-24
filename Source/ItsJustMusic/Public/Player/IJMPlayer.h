@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "IJMPlayer.generated.h"
 
 class UInputAction;
-struct FInputActionValue;
 
 UCLASS()
 class ITSJUSTMUSIC_API AIJMPlayer : public ACharacter
@@ -17,54 +17,46 @@ class ITSJUSTMUSIC_API AIJMPlayer : public ACharacter
 public:
 	AIJMPlayer();
 
-
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IJM|Movement")
+	// Input Actions
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|Input")
+	TObjectPtr<UInputAction> LookAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|Input")
+	TObjectPtr<UInputAction> MoveAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|Input")
+	TObjectPtr<UInputAction> TurnAction;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|Input")
+	TObjectPtr<UInputAction> SprintAction;
+
+	// Gameplay Stats
+	// Plaeyer Speed
+	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config")
 	float SprintSpeed = 900.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IJM|Movement")
-	float WalkSpeed = 600.0f;
+	// Speed FOV
+	float TargetFOV = 90.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config|Camera")
+	float NormalFOV = 90.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config|Camera")
+	float SpicyFOV = 105.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config|Camera")
+	float FOVInterpSpeed = 7.0f;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "IJM|Components", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* PlayerCamera;
+	UPROPERTY(VisibleAnywhere, Category = "IJM|Components")
+	TObjectPtr<class UCameraComponent> FirstPersonCamera;
 
-protected:
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoAim(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
+	void Move(const FInputActionValue& Value);
+	void TurnAround();
+	void TurnFront();
+	void StartSprint();
+	void EndSprint();
 
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoMove(const FInputActionValue& Value);
-
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoStartJump();
-
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoEndJump();
-
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoStartSprint();
-
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoEndSprint();
-
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoStartCrouch();
-
-	UFUNCTION(BlueprintCallable, Category = "IJM|Input")
-	virtual void DoEndCrouch();
-
-	UPROPERTY(EditAnywhere, Category = "IJM|Input")
-	UInputAction* JumpAction;
-	UPROPERTY(EditAnywhere, Category = "IJM|Input")
-	UInputAction* MoveAction;
-	UPROPERTY(EditAnywhere, Category = "IJM|Input")
-	UInputAction* SprintAction;
-	UPROPERTY(EditAnywhere, Category = "IJM|Input")
-	UInputAction* CrouchAction;
-	UPROPERTY(EditAnywhere, Category = "IJM|Input")
-	UInputAction* LookAction;
+	bool bIsLookingBack = false;
+	float BaseMoveSpeed = 600.0f;
 };

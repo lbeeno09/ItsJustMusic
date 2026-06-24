@@ -8,86 +8,123 @@
 
 AIJMPlayer::AIJMPlayer()
 {
-	PlayerCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
-	PlayerCamera->SetupAttachment(GetMesh(), FName("head"));
+	PrimaryActorTick.bCanEverTick = true;
 
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 150.0f;
+
+	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
+	FirstPersonCamera->SetupAttachment(RootComponent);
+	FirstPersonCamera->bUsePawnControlRotation = true;
 }
 
 void AIJMPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AIJMPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 void AIJMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if(UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+	if(UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		// Jump
-		EIC->BindAction(JumpAction, ETriggerEvent::Started, this, &AIJMPlayer::DoStartJump);
-		EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &AIJMPlayer::DoEndJump);
-
-		// Moving
-		EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AIJMPlayer::DoMove);
-
-		// Sprint
-		EIC->BindAction(SprintAction, ETriggerEvent::Started, this, &AIJMPlayer::DoStartSprint);
-		EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &AIJMPlayer::DoEndSprint);
-
-		// Crouching
-		EIC->BindAction(CrouchAction, ETriggerEvent::Started, this, &AIJMPlayer::DoStartCrouch);
-		EIC->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AIJMPlayer::DoEndCrouch);
-
-		// Looking
-		EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AIJMPlayer::DoAim);
+		// Turn Around
+		if(LookAction)
+		{
+			EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AIJMPlayer::Look);
+		}
+		if(MoveAction)
+		{
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AIJMPlayer::Move);
+		}
+		if(SprintAction)
+		{
+			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AIJMPlayer::StartSprint);
+			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AIJMPlayer::EndSprint);
+		}
+		if(TurnAction)
+		{
+			EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Started, this, &AIJMPlayer::TurnAround);
+			EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Completed, this, &AIJMPlayer::TurnFront);
+		}
 	}
 }
 
 
-void AIJMPlayer::DoAim(const FInputActionValue& Value)
+void AIJMPlayer::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-	AddControllerYawInput(LookAxisVector.X);
-	AddControllerPitchInput(LookAxisVector.Y);
+
+	if(Controller)
+	{
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
+	}
 }
 
-void AIJMPlayer::DoMove(const FInputActionValue& Value)
+void AIJMPlayer::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	AddMovementInput(GetActorForwardVector(), MovementVector.X);
-	AddMovementInput(GetActorRightVector(), MovementVector.Y);
+
+	if(Controller)
+	{
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		if(bIsLookingBack)
+		{
+			ForwardDirection *= -1.0f;
+			RightDirection *= -1.0f;
+		}
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
 }
 
-void AIJMPlayer::DoStartJump()
+void AIJMPlayer::TurnAround()
 {
-	Jump();
+	bIsLookingBack = true;
+
+	FRotator ControlRotation = Controller->GetControlRotation();
+	ControlRotation.Yaw += 180.0f;
+	ControlRotation.Normalize();
+
+	Controller->SetControlRotation(ControlRotation);
 }
 
-void AIJMPlayer::DoEndJump()
+void AIJMPlayer::TurnFront()
 {
-	StopJumping();
+	bIsLookingBack = false;
+
+	FRotator ControlRotation = Controller->GetControlRotation();
+	ControlRotation.Yaw -= 180.0f;
+	ControlRotation.Normalize();
+
+	Controller->SetControlRotation(ControlRotation);
 }
 
-void AIJMPlayer::DoStartSprint()
+void AIJMPlayer::StartSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
-void AIJMPlayer::DoEndSprint()
+void AIJMPlayer::EndSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-}
-
-void AIJMPlayer::DoStartCrouch()
-{
-	Crouch();
-}
-
-void AIJMPlayer::DoEndCrouch()
-{
-	UnCrouch();
+	GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
 }

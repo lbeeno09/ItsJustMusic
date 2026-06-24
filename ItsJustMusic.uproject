@@ -26,6 +26,14 @@
 		{
 			"Name": "LearningAgents",
 			"Enabled": true
+		},
+		{
+			"Name": "GuidedTutorials",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayStateTree",
+			"Enabled": true
 		}
 	]
 }

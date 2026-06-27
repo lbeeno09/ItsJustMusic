@@ -8,35 +8,57 @@ AMazeGenerator::AMazeGenerator()
 	RootComponent = RootSceneComponent;
 }
 
-void AMazeGenerator::GenerateMaze()
+AActor* AMazeGenerator::GenerateMaze()
 {
 	Grid.SetNumUninitialized(MazeWidth * MazeHeight);
 	for(int32 i = 0; i < Grid.Num(); i++)
 	{
 		Grid[i] = EMazeCellType::Wall;
 	}
+	Grid[GetGridIndex(0, 0)] = EMazeCellType::Corner;
+	Grid[GetGridIndex(MazeWidth - 1, 0)] = EMazeCellType::Corner;
+	Grid[GetGridIndex(0, MazeHeight - 1)] = EMazeCellType::Corner;
+	Grid[GetGridIndex(MazeWidth - 1, MazeHeight -1)] = EMazeCellType::Corner;
 
 	RunDFS(1, 1);
 	BraidMaze();
 	Grid[GetGridIndex(0, 1)] = EMazeCellType::Floor;
 	// 0: Top, 1: Left, 2: Right, 3: Bottom(ignore)
-	int32 ExitEdgeChoice = FMath::RandRange(0, 3);
+	ExitWallDirection = FMath::RandRange(0, 3);
 	if(FMath::RandBool())
 	{
-		if(ExitEdgeChoice == 0)
+		if(ExitWallDirection == 0)
 		{
-			Grid[GetGridIndex(MazeWidth - 1, FMath::RandRange(1, MazeHeight - 2))] = EMazeCellType::Floor;
+			int32 RandomY = FMath::RandRange(1, MazeHeight - 2);
+			ExitCellCoord = FIntPoint(MazeWidth - 1, RandomY);
+
+			Grid[GetGridIndex(MazeWidth - 1, RandomY)] = EMazeCellType::Floor;
 		}
-		else if(ExitEdgeChoice == 1)
+		else if(ExitWallDirection == 1)
 		{
-			Grid[GetGridIndex(FMath::RandRange(1, MazeWidth - 2), 0)] = EMazeCellType::Floor;
+			int32 RandomX = FMath::RandRange(1, MazeWidth - 2);
+			ExitCellCoord = FIntPoint(RandomX, 0);
+
+			Grid[GetGridIndex(RandomX, 0)] = EMazeCellType::Floor;
 		}
-		else
+		else if(ExitWallDirection == 2)
 		{
-			Grid[GetGridIndex(FMath::RandRange(1, MazeWidth - 2), MazeHeight - 1)] = EMazeCellType::Floor;
+			int32 RandomX = FMath::RandRange(1, MazeWidth - 2);
+			ExitCellCoord = FIntPoint(RandomX, MazeHeight - 1);
+
+			Grid[GetGridIndex(RandomX, MazeHeight - 1)] = EMazeCellType::Floor;
+		}
+		else if(ExitWallDirection == 3)
+		{
+			// Use the same opening as 
+			ExitCellCoord = FIntPoint(0, 1);
 		}
 	}
 	SpawnWorldGeometry();
+	AActor* SpawnedGoal = SpawnGoalPlatform();
+	SpawnChasingEnemy();
+
+	return SpawnedGoal;
 }
 
 void AMazeGenerator::RunDFS(int32 StartX, int32 StartY)
@@ -147,7 +169,29 @@ void AMazeGenerator::SpawnWorldGeometry()
 			FVector SpawnPos = ActorOrigin + LocalOffset;
 			EMazeCellType Cell = Grid[GetGridIndex(X, Y)];
 
-			if(Cell == EMazeCellType::Wall && WallClass)
+			if(Cell == EMazeCellType::Corner && CornerClass)
+			{
+				FRotator CornerRotation = FRotator::ZeroRotator;
+				if(X == 0 && Y == 0)
+				{
+					//FRotator CornerRotation = FRotator::ZeroRotator;
+				}
+				else if(X == 0 && Y == MazeHeight - 1)
+				{
+					CornerRotation = FRotator(0.0f, -90.0f, 0.0f);
+				}
+				else if(X == MazeWidth - 1 && Y == 0)
+				{
+					CornerRotation = FRotator(0.0f, 90.0f, 0.0f);
+				}
+				else if(X == MazeWidth - 1 && Y == MazeHeight - 1)
+				{
+					CornerRotation = FRotator(0.0f, 180.0f, 0.0f);
+				}
+
+				GetWorld()->SpawnActor<AActor>(CornerClass, SpawnPos, CornerRotation, SpawnParams);
+			}
+			else if(Cell == EMazeCellType::Wall && WallClass)
 			{
 				FRotator WallRotation = FRotator::ZeroRotator;
 				if(Y == 0)
@@ -180,15 +224,75 @@ void AMazeGenerator::SpawnWorldGeometry()
 			else if(Cell == EMazeCellType::Floor && FloorClass)
 			{
 				GetWorld()->SpawnActor<AActor>(FloorClass, SpawnPos, FRotator::ZeroRotator, SpawnParams);
+			}
 
-				// Populate with orbs
-
-				if(OrbClass && (X != 1 || Y != 1))
-				{
-					FVector OrbPos = SpawnPos + FVector(0.0f, 0.0f, 50.0f);
-					GetWorld()->SpawnActor<AActor>(OrbClass, OrbPos, FRotator::ZeroRotator, SpawnParams);
-				}
+			// Populate with orbs
+			if(OrbClass)
+			{
+				FVector OrbPos = SpawnPos + FVector(0.0f, 0.0f, 50.0f);
+				GetWorld()->SpawnActor<AActor>(OrbClass, OrbPos, FRotator::ZeroRotator, SpawnParams);
 			}
 		}
 	}
+}
+
+AActor* AMazeGenerator::SpawnGoalPlatform()
+{
+	if(!GoalPlatformClass)
+	{
+		return nullptr;
+	}
+
+	FVector ActorOrigin = GetActorLocation();
+	const float HalfCell = CellSize * 0.5f;
+
+	FVector ExitTileCenter;
+	FVector GoalSpawnLocation;
+	FRotator GoalRotation = FRotator::ZeroRotator;
+	if(ExitWallDirection == 0)
+	{
+		ExitTileCenter = ActorOrigin + FVector((ExitCellCoord.X + 1) * CellSize, ExitCellCoord.Y * CellSize, 0.0f);
+		GoalSpawnLocation = ExitTileCenter + FVector(0.0f, HalfCell, 0.0f);
+	}
+	else if(ExitWallDirection == 1)
+	{
+		ExitTileCenter = ActorOrigin + FVector(ExitCellCoord.X * CellSize, ExitCellCoord.Y * CellSize, 0.0f);
+		GoalSpawnLocation = ExitTileCenter + FVector(HalfCell, 0.0f, 0.0f);
+		GoalRotation = FRotator(0.0f, -90.0f, 0.0f);
+	}
+	else if(ExitWallDirection == 2)
+	{
+		ExitTileCenter = ActorOrigin + FVector(ExitCellCoord.X * CellSize, (ExitCellCoord.Y + 1) * CellSize, 0.0f);
+		GoalSpawnLocation = ExitTileCenter + FVector(HalfCell, 0.0f, 0.0f);
+		GoalRotation = FRotator(0.0f, 90.0f, 0.0f);
+	}
+	else if(ExitWallDirection == 3)
+	{
+		ExitTileCenter = ActorOrigin + FVector(ExitCellCoord.X * CellSize, (ExitCellCoord.Y + 1) * CellSize, 0.0f);
+		GoalSpawnLocation = ExitTileCenter + FVector(0.0f, HalfCell, 0.0f);
+		GoalRotation = FRotator(0.0f, 180.0f, 0.0f);
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	return GetWorld()->SpawnActor<AActor>(GoalPlatformClass, GoalSpawnLocation, GoalRotation, SpawnParams);
+}
+
+void AMazeGenerator::SpawnChasingEnemy()
+{
+	if(!EnemyClass)
+	{
+		return;
+	}
+
+	FVector ActorOrigin = GetActorLocation();
+	const float HalfCell = CellSize * 0.5f;
+
+	FVector EnemySpawnLoc = ActorOrigin + FVector((MazeWidth - 1) * CellSize + HalfCell, (MazeHeight - 1) * CellSize + HalfCell, 50.0f);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	APawn* SpawnedEnemy = GetWorld()->SpawnActor<APawn>(EnemyClass, EnemySpawnLoc, FRotator(0.0f, -135.0f, 0.0f), SpawnParams);
 }

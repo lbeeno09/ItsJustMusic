@@ -2,6 +2,7 @@
 
 #include "Enemy/IJMEnemyController.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "Core/IJMGameInstance.h"
 
 AIJMEnemyController::AIJMEnemyController()
 {
@@ -12,12 +13,15 @@ void AIJMEnemyController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if(!BehaviorTreeAsset)
+	if(BehaviorTreeAsset)
 	{
 		RunBehaviorTree(BehaviorTreeAsset);
 	}
-	else
+	else if(UIJMGameInstance* GI = Cast<UIJMGameInstance>(GetGameInstance()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Missing Behavior Tree Asset Assignment"), *GetName());
+		if(GI->bUseRL)
+		{
+			// Use RL Method
+		}
 	}
 }

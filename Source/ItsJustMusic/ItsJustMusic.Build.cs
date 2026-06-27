@@ -14,8 +14,13 @@ public class ItsJustMusic : ModuleRules
 			"Engine", 
 			"InputCore",
 			"EnhancedInput",
-			"AIModule"
-		});
+			"AIModule",
+			"Learning",
+            "LearningTraining",
+            "LearningAgents",
+            "LearningAgentsTraining",
+
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

@@ -14,7 +14,7 @@ void AIJMGameMode::BeginPlay()
 		AActor* FoundGeneratorActor = UGameplayStatics::GetActorOfClass(GetWorld(), MazeGeneratorClass);
 		if(AMazeGenerator* Generator = Cast< AMazeGenerator>(FoundGeneratorActor))
 		{
-			Generator->GenerateMaze();
+			GoalPlatformActor = Generator->GenerateMaze();
 		}
 	}
 
@@ -35,18 +35,23 @@ void AIJMGameMode::RegisterOrbCollected()
 	
 	if(TotalOrbRemaining <= 0)
 	{
-		DisplayEndScreen(true);
 
-		if(APlayerController* PC = GetWorld()->GetFirstPlayerController())
-		{
-			PC->SetShowMouseCursor(true);
-
-			FInputModeUIOnly InputMode;
-			PC->SetInputMode(InputMode);
-		}
-
-		UGameplayStatics::SetGamePaused(GetWorld(), true);
 	}
+}
+
+void AIJMGameMode::CompleteLevel()
+{
+	DisplayEndScreen(true);
+
+	if(APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		PC->SetShowMouseCursor(true);
+
+		FInputModeUIOnly InputMode;
+		PC->SetInputMode(InputMode);
+	}
+
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
 void AIJMGameMode::GameOver()

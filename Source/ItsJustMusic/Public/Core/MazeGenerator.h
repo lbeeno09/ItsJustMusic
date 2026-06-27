@@ -10,7 +10,8 @@ UENUM(BlueprintType)
 enum class EMazeCellType : uint8
 {
 	Wall,
-	Floor
+	Floor,
+	Corner
 };
 
 UCLASS()
@@ -20,7 +21,7 @@ class ITSJUSTMUSIC_API AMazeGenerator : public AActor
 	
 public:
 	AMazeGenerator();
-	void GenerateMaze();
+	AActor* GenerateMaze();
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "IJM|Config")
@@ -39,7 +40,16 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "IJM|Assets")
 	TSubclassOf<AActor> FloorClass;
 	UPROPERTY(EditAnywhere, Category = "IJM|Assets")
+	TSubclassOf<AActor> CornerClass;
+	UPROPERTY(EditAnywhere, Category = "IJM|Assets")
 	TSubclassOf<AActor> OrbClass;
+	UPROPERTY(EditAnywhere, Category = "IJM|Assets")
+	TSubclassOf<AActor> GoalPlatformClass;
+	UPROPERTY(EditAnywhere, Category = "IJM|Assets")
+	TSubclassOf<APawn> EnemyClass;
+
+	FIntPoint ExitCellCoord;
+	int32 ExitWallDirection; // 0: Top, 1: Left, 2: Right, 3: Bottom
 
 private:
 	TArray<EMazeCellType> Grid;
@@ -50,4 +60,6 @@ private:
 	TArray<FIntPoint> GetUnivisitedNeighbors(int32 X, int32 Y);
 	UFUNCTION()
 	void SpawnWorldGeometry();
+	AActor* SpawnGoalPlatform();
+	void SpawnChasingEnemy();
 };

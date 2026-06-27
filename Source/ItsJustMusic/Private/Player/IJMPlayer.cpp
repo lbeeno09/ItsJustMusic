@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Player/IJMPlayer.h"
+#include "Core/IJMGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -22,17 +24,30 @@ AIJMPlayer::AIJMPlayer()
 	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	FirstPersonCamera->SetupAttachment(RootComponent);
 	FirstPersonCamera->bUsePawnControlRotation = true;
+
+	FlashLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("FlashLight"));
+	FlashLight->SetupAttachment(GetMesh());
 }
 
 void AIJMPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CurrentStamina = BaseStamina;
 }
 
 void AIJMPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(bIsRunning)
+	{
+		UpdateStamina(-StaminaDecayRate * DeltaTime);
+	}
+	else
+	{
+		UpdateStamina(StaminaRechargeRate * DeltaTime);
+	}
 }
 
 void AIJMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -63,6 +78,13 @@ void AIJMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	}
 }
 
+void AIJMPlayer::UpdateStamina(float Amount)
+{
+	CurrentStamina = FMath::Clamp(CurrentStamina + Amount, 0.0f, BaseStamina);
+
+	float StaminaPercent = CurrentStamina / BaseStamina;
+	OnStaminaChanged.Broadcast(StaminaPercent);
+}
 
 void AIJMPlayer::Look(const FInputActionValue& Value)
 {
@@ -121,10 +143,12 @@ void AIJMPlayer::TurnFront()
 
 void AIJMPlayer::StartSprint()
 {
+	bIsRunning = true;
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
 void AIJMPlayer::EndSprint()
 {
+	bIsRunning = false;
 	GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
 }

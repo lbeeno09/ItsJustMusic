@@ -9,6 +9,8 @@
 
 class UInputAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChanged, float, NewPercent);
+
 UCLASS()
 class ITSJUSTMUSIC_API AIJMPlayer : public ACharacter
 {
@@ -16,6 +18,11 @@ class ITSJUSTMUSIC_API AIJMPlayer : public ACharacter
 
 public:
 	AIJMPlayer();
+
+	void UpdateStamina(float Amount);
+
+	UPROPERTY(BlueprintAssignable, Category = "IJM|Events")
+	FOnStaminaChanged OnStaminaChanged;
 
 protected:
 	virtual void BeginPlay() override;
@@ -36,19 +43,19 @@ protected:
 	// Plaeyer Speed
 	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config")
 	float SprintSpeed = 900.0f;
-
-	// Speed FOV
-	float TargetFOV = 90.0f;
-	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config|Camera")
-	float NormalFOV = 90.0f;
-	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config|Camera")
-	float SpicyFOV = 105.0f;
-	UPROPERTY(EditDefaultsOnly, Category = "IJM|Config|Camera")
-	float FOVInterpSpeed = 7.0f;
+	UPROPERTY(VisibleAnywhere, Category = "IJM|Components")
+	float CurrentStamina = 100.0f;
+	UPROPERTY(VisibleAnywhere, Category = "IJM|Components")
+	float StaminaDecayRate = 12.0f;
+	UPROPERTY(VisibleAnywhere, Category = "IJM|Components")
+	float StaminaRechargeRate = 10.0f;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "IJM|Components")
 	TObjectPtr<class UCameraComponent> FirstPersonCamera;
+
+	UPROPERTY(VisibleAnywhere, Category = "IJM|Components")
+	TObjectPtr<class USpotLightComponent> FlashLight;
 
 	void Look(const FInputActionValue& Value);
 	void Move(const FInputActionValue& Value);
@@ -58,5 +65,7 @@ private:
 	void EndSprint();
 
 	bool bIsLookingBack = false;
+	bool bIsRunning = false;
 	float BaseMoveSpeed = 600.0f;
+	float BaseStamina = 100.0f;
 };

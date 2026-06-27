@@ -21,10 +21,16 @@ public:
 	void DisplayEndScreen(bool bPlayerWon);
 
 	void RegisterOrbCollected();
+	UFUNCTION(BlueprintCallable, Category = "IJM|Gameflow")
+	void CompleteLevel();
+	UFUNCTION(BlueprintCallable, Category = "IJM|Gameflow")
 	void GameOver();
 
 	UPROPERTY(BlueprintAssignable, Category = "IJM|Events")
 	FOnOrbCountChanged OnOrbCountChanged;
+
+	UFUNCTION(BlueprintPure, Category = "IJM|GameFlow")
+	int32 GetTotaOrbRemaining() const { return TotalOrbRemaining; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -34,4 +40,7 @@ protected:
 
 private:
 	int32 TotalOrbRemaining = 0;
+
+	UPROPERTY()
+	TObjectPtr<AActor> GoalPlatformActor;
 };

@@ -9,6 +9,7 @@
 
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
 
 /**
  * 
@@ -32,6 +33,8 @@ protected:
 	TObjectPtr<UAIPerceptionComponent> AIPerceptionComp;
 	UPROPERTY(Transient)
 	TObjectPtr<UAISenseConfig_Sight> SightConfig;
+	UPROPERTY(Transient)
+	TObjectPtr<UAISenseConfig_Hearing> HearingConfig;
 
 private:
 	UFUNCTION()

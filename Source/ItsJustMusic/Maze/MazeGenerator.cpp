@@ -297,6 +297,7 @@ AActor* AMazeGenerator::SpawnGoalPlatform()
 	FVector ExitTileCenter;
 	FVector GoalSpawnLocation;
 	FRotator GoalRotation = FRotator::ZeroRotator;
+	// 0: Top, 1: Left, 2: Right, 3: Bottom(ignore)
 	if(ExitWallDirection == 0)
 	{
 		ExitTileCenter = ActorOrigin + FVector((ExitCellCoord.X + 1) * CellSize, ExitCellCoord.Y * CellSize, 0.0f);

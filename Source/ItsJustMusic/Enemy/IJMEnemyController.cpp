@@ -6,6 +6,8 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISense_Hearing.h"
+#include "Perception/AISenseConfig_Hearing.h"
 #include "Player/IJMPlayer.h"
 
 AIJMEnemyController::AIJMEnemyController()
@@ -21,8 +23,15 @@ AIJMEnemyController::AIJMEnemyController()
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-
 	AIPerceptionComp->ConfigureSense(*SightConfig);
+
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
+	HearingConfig->HearingRange = 3000.0f;
+	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	AIPerceptionComp->ConfigureSense(*HearingConfig);
+
 	AIPerceptionComp->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
@@ -51,25 +60,41 @@ void AIJMEnemyController::OnPossess(APawn* InPawn)
 
 void AIJMEnemyController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	AIJMPlayer* IJMPlayer = Cast<AIJMPlayer>(Actor);
-	if(!IJMPlayer)
-	{
-		return;
-	}
 	UBlackboardComponent* BB = GetBlackboardComponent();
 	if(!BB)
 	{
 		return;
 	}
 
-	if(Stimulus.WasSuccessfullySensed())
+	const FAISenseID SightID = UAISense::GetSenseID<UAISense_Sight>();
+	const FAISenseID HearingID = UAISense::GetSenseID<UAISense_Hearing>();
+	if(Stimulus.Type == SightID)
 	{
-		BB->SetValueAsObject(TEXT("TargetActor"), IJMPlayer);
-		BB->ClearValue(TEXT("LastKnownLocation"));
+		AIJMPlayer* IJMPlayer = Cast<AIJMPlayer>(Actor);
+		if(!IJMPlayer)
+		{
+			return;
+		}
+
+		if(Stimulus.WasSuccessfullySensed())
+		{
+
+			BB->SetValueAsObject(TEXT("TargetActor"), IJMPlayer);
+			BB->ClearValue(TEXT("LastKnownLocation"));
+		}
+		else
+		{
+			BB->SetValueAsVector(TEXT("LastKnownLocation"), Stimulus.StimulusLocation);
+			BB->ClearValue(TEXT("TargetActor"));
+		}
 	}
-	else
+	else if(Stimulus.Type == HearingID)
 	{
-		BB->SetValueAsVector(TEXT("LastKnownLocation"), Stimulus.StimulusLocation);
-		BB->ClearValue(TEXT("TargetActor"));
+		if(Stimulus.WasSuccessfullySensed())
+		{
+			BB->SetValueAsVector(TEXT("NoiseLocation"), Stimulus.StimulusLocation);
+			BB->SetValueAsBool(TEXT("HeardNoise"), true);
+		}
 	}
+
 }

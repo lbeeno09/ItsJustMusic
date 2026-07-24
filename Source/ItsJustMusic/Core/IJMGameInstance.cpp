@@ -4,6 +4,8 @@
 
 void UIJMGameInstance::Init()
 {
+	Super::Init();
+
 	bUseRL = false;
 	SelectedDifficulty = EGameDifficulty::Medium;
 }

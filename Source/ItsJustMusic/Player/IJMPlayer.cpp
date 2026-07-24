@@ -7,6 +7,7 @@
 #include "Components/SpotLightComponent.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Perception/AISense_Hearing.h"
 
 AIJMPlayer::AIJMPlayer()
 {
@@ -33,7 +34,8 @@ void AIJMPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentStamina = BaseStamina;
+	GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
+	CurrentStamina = MaxStamina;
 }
 
 void AIJMPlayer::Tick(float DeltaTime)
@@ -46,7 +48,17 @@ void AIJMPlayer::Tick(float DeltaTime)
 	}
 	else
 	{
-		UpdateStamina(StaminaRechargeRate * DeltaTime);
+		if(bCanStaminaRegenerate)
+		{
+			UpdateStamina(StaminaRechargeRate * DeltaTime);
+		}
+	}
+
+	if(bIsPlayingMusic)
+	{
+		CurrentSanity = FMath::Clamp(CurrentSanity + (SanityRegenRate * DeltaTime), 0.0f, MaxSanity);
+
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), MusicLoudness, this, MusicHearRange, FName("MusicNoise"));
 	}
 }
 
@@ -79,14 +91,28 @@ void AIJMPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		{
 			EnhancedInputComponent->BindAction(EscapeAction, ETriggerEvent::Triggered, this, &AIJMPlayer::Escape);
 		}
+		if(ListenAction)
+		{
+			EnhancedInputComponent->BindAction(ListenAction, ETriggerEvent::Triggered, this, &AIJMPlayer::ToggleMusic);
+		}
 	}
 }
 
 void AIJMPlayer::UpdateStamina(float Amount)
 {
-	CurrentStamina = FMath::Clamp(CurrentStamina + Amount, 0.0f, BaseStamina);
+	CurrentStamina = FMath::Clamp(CurrentStamina + Amount, 0.0f, MaxStamina);
 
-	float StaminaPercent = CurrentStamina / BaseStamina;
+	if(CurrentStamina <= 0.0f)
+	{
+		bCanStaminaRegenerate = false;
+
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &AIJMPlayer::ResetStaminaRegen, 1.0f, false);
+
+		EndSprint();
+	}
+
+	float StaminaPercent = CurrentStamina / MaxStamina;
 	OnStaminaChanged.Broadcast(StaminaPercent);
 }
 
@@ -125,6 +151,11 @@ void AIJMPlayer::Move(const FInputActionValue& Value)
 
 void AIJMPlayer::TurnAround()
 {
+	if(bIsLookingBack)
+	{
+		return;
+	}
+
 	bIsLookingBack = true;
 
 	FRotator ControlRotation = Controller->GetControlRotation();
@@ -136,6 +167,11 @@ void AIJMPlayer::TurnAround()
 
 void AIJMPlayer::TurnFront()
 {
+	if(!bIsLookingBack)
+	{
+		return;
+	}
+
 	bIsLookingBack = false;
 
 	FRotator ControlRotation = Controller->GetControlRotation();
@@ -157,7 +193,18 @@ void AIJMPlayer::EndSprint()
 	GetCharacterMovement()->MaxWalkSpeed = BaseMoveSpeed;
 }
 
+void AIJMPlayer::ToggleMusic()
+{
+	bIsPlayingMusic = !bIsPlayingMusic;
+
+}
+
 void AIJMPlayer::Escape()
 {
 	OnEscapeInputTriggered.Broadcast();
+}
+
+void AIJMPlayer::ResetStaminaRegen()
+{
+	bCanStaminaRegenerate = true;
 }

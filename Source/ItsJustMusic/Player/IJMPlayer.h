@@ -78,9 +78,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "IJM|Player|Audio", meta = (AllowPrivateAccess = "true"))
 	bool bIsPlayingMusic = false;
 
+public:
+	UFUNCTION(BlueprintNativeEvent)
+	void TurnAround();
+	UFUNCTION(BlueprintNativeEvent)
+	void TurnFront();
+
 private:
 	// Components
-	UPROPERTY(VisibleAnywhere, Category = "IJM|Components", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IJM|Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UCameraComponent> FirstPersonCamera;
 
 	UPROPERTY(VisibleAnywhere, Category = "IJM|Components", meta = (AllowPrivateAccess = "true"))
@@ -101,8 +107,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> SprintAction;
 
-	void TurnAround();
-	void TurnFront();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "IJM|Input", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> TurnAction;
 	bool bIsLookingBack = false;

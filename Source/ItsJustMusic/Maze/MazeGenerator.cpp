@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Maze/MazeGenerator.h"
-#include "Core/IJMGameInstance.h"
+#include "Core/Common/IJMGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 AMazeGenerator::AMazeGenerator()

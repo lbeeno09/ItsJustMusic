@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/MainMenu/MainMenuWidget.h"
-#include "Core/IJMGameInstance.h"
+#include "Core/Common/IJMGameInstance.h"
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"

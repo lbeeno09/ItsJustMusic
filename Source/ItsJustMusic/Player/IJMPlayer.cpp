@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Player/IJMPlayer.h"
-#include "Core/MainGameMode.h"
+#include "Core/MainGame/MainGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SpotLightComponent.h"
@@ -149,7 +149,7 @@ void AIJMPlayer::Move(const FInputActionValue& Value)
 	}
 }
 
-void AIJMPlayer::TurnAround()
+void AIJMPlayer::TurnAround_Implementation()
 {
 	if(bIsLookingBack)
 	{
@@ -158,14 +158,14 @@ void AIJMPlayer::TurnAround()
 
 	bIsLookingBack = true;
 
-	FRotator ControlRotation = Controller->GetControlRotation();
-	ControlRotation.Yaw += 180.0f;
-	ControlRotation.Normalize();
+	//FRotator ControlRotation = Controller->GetControlRotation();
+	//ControlRotation.Yaw += 180.0f;
+	//ControlRotation.Normalize();
 
-	Controller->SetControlRotation(ControlRotation);
+	//Controller->SetControlRotation(ControlRotation);
 }
 
-void AIJMPlayer::TurnFront()
+void AIJMPlayer::TurnFront_Implementation()
 {
 	if(!bIsLookingBack)
 	{
@@ -174,11 +174,11 @@ void AIJMPlayer::TurnFront()
 
 	bIsLookingBack = false;
 
-	FRotator ControlRotation = Controller->GetControlRotation();
-	ControlRotation.Yaw -= 180.0f;
-	ControlRotation.Normalize();
+	//FRotator ControlRotation = Controller->GetControlRotation();
+	//ControlRotation.Yaw -= 180.0f;
+	//ControlRotation.Normalize();
 
-	Controller->SetControlRotation(ControlRotation);
+	//Controller->SetControlRotation(ControlRotation);
 }
 
 void AIJMPlayer::StartSprint()

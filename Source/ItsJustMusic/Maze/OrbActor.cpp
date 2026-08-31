@@ -2,7 +2,7 @@
 
 #include "Maze/OrbActor.h"
 #include "Player/IJMPlayer.h"
-#include "Core/MainGameMode.h"
+#include "Core/MainGame/MainGameMode.h"
 #include "Components/SphereComponent.h"
 
 AOrbActor::AOrbActor()
@@ -27,6 +27,7 @@ void AOrbActor::NotifyActorBeginOverlap(AActor* OtherActor)
 	{
 		if(AMainGameMode* GameMode = Cast<AMainGameMode>(GetWorld()->GetAuthGameMode()))
 		{
+			Player->UpdateStamina(5.0f);
 			GameMode->HandleOrbCollected();
 		}
 

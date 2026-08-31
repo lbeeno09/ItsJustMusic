@@ -3,7 +3,7 @@
 #include "UI/MainGame/GameUIWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/ProgressBar.h"
-#include "Core/MainGameMode.h"
+#include "Core/MainGame/MainGameMode.h"
 #include "Player/IJMPlayer.h"
 #include "Kismet/GameplayStatics.h"
 

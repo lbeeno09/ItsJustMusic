@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/MainMenu/MainMenuWidget.h"
 #include "Core/Common/IJMGameInstance.h"
@@ -40,7 +40,7 @@ void UMainMenuWidget::OnButtonPlayClicked()
 	int32 EnumValue = DifficultyEnum->GetValueByNameString(SelectedDifficulty);
 
 	GI->SelectedDifficulty = static_cast<EGameDifficulty>(EnumValue);
-	UGameplayStatics::OpenLevel(GetWorld(), TEXT("L_FlatMap"));
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("L_GameMap"));
 }
 
 void UMainMenuWidget::OnButtonSettingsClicked()

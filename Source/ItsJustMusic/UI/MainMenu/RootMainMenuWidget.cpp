@@ -1,9 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/MainMenu/RootMainMenuWidget.h"
 #include "UI/MainMenu/MainMenuWidget.h"
 #include "UI/MainMenu/CreditsWidget.h"
-#include "UI/Common/SettingsWidget.h"
+#include "UI/Settings/SettingsWidget.h"
 #include "Components/WidgetSwitcher.h"
 
 void URootMainMenuWidget::NativeConstruct()
@@ -31,4 +31,19 @@ void URootMainMenuWidget::SwitchToSettingsView()
 void URootMainMenuWidget::SwitchToCreditsView()
 {
 	WidgetSwitcherRoot->SetActiveWidgetIndex(EMenuIndex::Credits);
+}
+
+void URootMainMenuWidget::HandleEscapeAction()
+{
+	switch(WidgetSwitcherRoot->GetActiveWidgetIndex())
+	{
+	case 0:
+		break;
+	case 1:
+	case 2:
+		SwitchToMainMenuView();
+		break;
+	default:
+		break;
+	}
 }

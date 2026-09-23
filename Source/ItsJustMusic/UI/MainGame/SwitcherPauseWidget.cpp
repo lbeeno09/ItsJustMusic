@@ -1,8 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/MainGame/SwitcherPauseWidget.h"
 #include "UI/MainGame/PauseWidget.h"
-#include "UI/Common/SettingsWidget.h"
+#include "UI/Settings/SettingsWidget.h"
 #include "Components/WidgetSwitcher.h"
 
 void USwitcherPauseWidget::NativeConstruct()

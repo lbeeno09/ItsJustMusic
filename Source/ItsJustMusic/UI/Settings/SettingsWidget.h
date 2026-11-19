@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSettingsReturnClicked);
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class ITSJUSTMUSIC_API USettingsWidget : public UUserWidget
 {
 	GENERATED_BODY()

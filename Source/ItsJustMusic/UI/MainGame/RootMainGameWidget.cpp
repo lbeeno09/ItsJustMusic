@@ -4,8 +4,8 @@
 #include "UI/MainGame/GameUIWidget.h"
 #include "UI/MainGame/SwitcherPauseWidget.h"
 #include "UI/MainGame/GameOverWidget.h"
-#include "Core/MainGame/MainGameMode.h"
-#include "Player/IJMPlayer.h"
+#include "Game/MainGame/MainGameMode.h"
+#include "Character/Player/IJMPlayer.h"
 #include "Components/Overlay.h"
 #include "Kismet/GameplayStatics.h"
 

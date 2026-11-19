@@ -11,7 +11,7 @@ class URootMainGameWidget;
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class ITSJUSTMUSIC_API AMainGameHUD : public AHUD
 {
 	GENERATED_BODY()
